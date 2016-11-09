@@ -21,10 +21,24 @@ import (
 
 type CFTypeID uint
 
+const (
+	Null   CFTypeID = iota
+	String          = 7
+)
+
+// CFPropertyListRef is a wrapper around C.CFPropertyListRef
 type CFPropertyListRef struct {
 	ref C.CFPropertyListRef
 }
 
+// CFTypeID returns the CFTypeID of a CFPropertyListRef
+func (plisRef CFPropertyListRef) CFTypeID() CFTypeID {
+	typeId := C.CFGetTypeID(C.CFTypeRef(plisRef.ref))
+	return CFTypeID(typeId)
+}
+
+// SetAppValue wraps CFPreferencesSetAppValue
+// TODO: value arg should be switched to CFPropertyListRef
 func SetAppValue(key, value, appID string) {
 	cKey := cfstring(key)
 	cVal := cfstring(value)
@@ -33,17 +47,13 @@ func SetAppValue(key, value, appID string) {
 	C.CFPreferencesSetAppValue(cKey, cVal, cAppID)
 }
 
+// CopyAppValue wraps CFPreferencesCopyAppValue
 func CopyAppValue(key, appID string) CFPropertyListRef {
 	cKey := cfstring(key)
 	cAppID := cfstring(appID)
 
 	appValue := C.CFPreferencesCopyAppValue(cKey, cAppID)
 	return CFPropertyListRef{ref: appValue}
-}
-
-func (plisRef CFPropertyListRef) CFTypeID() CFTypeID {
-	typeId := C.CFGetTypeID(C.CFTypeRef(plisRef.ref))
-	return CFTypeID(typeId)
 }
 
 func cfstringGo(cfs C.CFStringRef) string {
