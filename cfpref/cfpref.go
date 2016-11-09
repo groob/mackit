@@ -19,6 +19,12 @@ import (
 	"unsafe"
 )
 
+type CFTypeID uint
+
+type CFPropertyListRef struct {
+	ref C.CFPropertyListRef
+}
+
 func SetAppValue(key, value, appID string) {
 	cKey := cfstring(key)
 	cVal := cfstring(value)
@@ -27,15 +33,12 @@ func SetAppValue(key, value, appID string) {
 	C.CFPreferencesSetAppValue(cKey, cVal, cAppID)
 }
 
-func CopyAppValue(key, appID string) string {
+func CopyAppValue(key, appID string) CFPropertyListRef {
 	cKey := cfstring(key)
 	cAppID := cfstring(appID)
 
 	appValue := C.CFPreferencesCopyAppValue(cKey, cAppID)
-	if appValue == nil {
-		return ""
-	}
-	return cfstringGo(C.CFStringRef(appValue))
+	return CFPropertyListRef{ref: appValue}
 }
 
 func cfstringGo(cfs C.CFStringRef) string {
@@ -61,4 +64,9 @@ func cfstringGo(cfs C.CFStringRef) string {
 func cfstring(s string) C.CFStringRef {
 	n := C.CFIndex(len(s))
 	return C.CFStringCreateWithBytes(nil, *(**C.UInt8)(unsafe.Pointer(&s)), n, C.kCFStringEncodingUTF8, 0)
+}
+
+func (plisRef CFPropertyListRef) CFTypeID() CFTypeID {
+	typeId := C.CFGetTypeID(C.CFTypeRef(plisRef.ref))
+	return CFTypeID(typeId)
 }

@@ -8,5 +8,5 @@ import (
 
 func main() {
 	homepage := cfpref.CopyAppValue("HomePage", "com.apple.safari")
-	fmt.Println(homepage)
+	fmt.Println(homepage.CFTypeID())
 }
