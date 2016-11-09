@@ -26,7 +26,7 @@ const (
 	String          = 7
 )
 
-// CFPropertyListRef is a wrapper around C.CFPropertyListRef
+// CFPropertyListRef is a wrapper around C.CFPropertyListRef.
 type CFPropertyListRef struct {
 	ref C.CFPropertyListRef
 }
@@ -35,6 +35,17 @@ type CFPropertyListRef struct {
 func (plisRef CFPropertyListRef) CFTypeID() CFTypeID {
 	typeId := C.CFGetTypeID(C.CFTypeRef(plisRef.ref))
 	return CFTypeID(typeId)
+}
+
+// String returns a Go string.
+// If CFPropertyListRef has a CFTypeID == 7, then the
+// CFStringRef is converted to a go string. Otherwise
+// an empty string is returned.
+func (plistRef CFPropertyListRef) String() string {
+	if plistRef.CFTypeID() != String {
+		return ""
+	}
+	return cfstringGo(C.CFStringRef(plistRef.ref))
 }
 
 // SetAppValue wraps CFPreferencesSetAppValue
