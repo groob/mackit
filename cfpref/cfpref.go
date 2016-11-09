@@ -41,6 +41,11 @@ func CopyAppValue(key, appID string) CFPropertyListRef {
 	return CFPropertyListRef{ref: appValue}
 }
 
+func (plisRef CFPropertyListRef) CFTypeID() CFTypeID {
+	typeId := C.CFGetTypeID(C.CFTypeRef(plisRef.ref))
+	return CFTypeID(typeId)
+}
+
 func cfstringGo(cfs C.CFStringRef) string {
 	var usedBufLen C.CFIndex
 	n := C.cfstring_utf8_length(cfs, &usedBufLen)
@@ -64,9 +69,4 @@ func cfstringGo(cfs C.CFStringRef) string {
 func cfstring(s string) C.CFStringRef {
 	n := C.CFIndex(len(s))
 	return C.CFStringCreateWithBytes(nil, *(**C.UInt8)(unsafe.Pointer(&s)), n, C.kCFStringEncodingUTF8, 0)
-}
-
-func (plisRef CFPropertyListRef) CFTypeID() CFTypeID {
-	typeId := C.CFGetTypeID(C.CFTypeRef(plisRef.ref))
-	return CFTypeID(typeId)
 }
