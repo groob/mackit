@@ -19,6 +19,14 @@ import (
 	"unsafe"
 )
 
+func SetAppValue(key, value, appID string) {
+	cKey := cfstring(key)
+	cVal := cfstring(value)
+	cAppID := cfstring(appID)
+
+	C.CFPreferencesSetAppValue(cKey, cVal, cAppID)
+}
+
 func CopyAppValue(key, appID string) string {
 	cKey := cfstring(key)
 	cAppID := cfstring(appID)
