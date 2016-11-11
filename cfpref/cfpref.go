@@ -32,8 +32,11 @@ type CFPropertyListRef struct {
 }
 
 // CFTypeID returns the CFTypeID of a CFPropertyListRef
-func (plisRef CFPropertyListRef) CFTypeID() CFTypeID {
-	typeId := C.CFGetTypeID(C.CFTypeRef(plisRef.ref))
+func (plistRef CFPropertyListRef) CFTypeID() CFTypeID {
+	if plistRef.ref == nil {
+		return Null
+	}
+	typeId := C.CFGetTypeID(C.CFTypeRef(plistRef.ref))
 	return CFTypeID(typeId)
 }
 
