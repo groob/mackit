@@ -51,16 +51,6 @@ func (plistRef CFPropertyListRef) String() string {
 	return cfstringGo(C.CFStringRef(plistRef.ref))
 }
 
-// SetAppValue wraps CFPreferencesSetAppValue
-// TODO: value arg should be switched to CFPropertyListRef
-func SetAppValue(key, value, appID string) {
-	cKey := cfstring(key)
-	cVal := cfstring(value)
-	cAppID := cfstring(appID)
-
-	C.CFPreferencesSetAppValue(cKey, cVal, cAppID)
-}
-
 // CopyAppValue wraps CFPreferencesCopyAppValue
 func CopyAppValue(key, appID string) CFPropertyListRef {
 	cKey := cfstring(key)
