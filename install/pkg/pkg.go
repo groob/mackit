@@ -18,12 +18,13 @@ import (
 type Option func(*installer)
 
 type installer struct {
-	ctx                     context.Context
-	choicesXML              *installerChoices
-	installerChoicesXML     []byte
-	installerChoicesXMLPath string
-	args                    []string
-	customEnv               []string
+	suppressBundleRelocation bool
+	ctx                      context.Context
+	choicesXML               *installerChoices
+	installerChoicesXML      []byte
+	installerChoicesXMLPath  string
+	args                     []string
+	customEnv                []string
 
 	appliedOpts bool
 }
@@ -94,6 +95,15 @@ func ApplyChoiceChangesXML(xml []byte) Option {
 func WithContext(ctx context.Context) Option {
 	return func(o *installer) {
 		o.ctx = ctx
+	}
+}
+
+// SuppressBundleRelocation attempts to remove any info in the package that would
+// cause bundle relocation behavior. This makes bundles install or update in their
+// default location.
+func SuppressBundleRelocation() Option {
+	return func(o *installer) {
+		o.suppressBundleRelocation = true
 	}
 }
 
@@ -236,4 +246,19 @@ func fromOutput(out []byte) restartAction {
 	default:
 		return none
 	}
+}
+
+func suppressBundleRelocation(pkgpath string) error {
+	if err := rmTokenDefinitions(pkgpath); err != nil {
+		return err
+	}
+	return nil
+}
+
+func rmTokenDefinitions(pkgpath string) error {
+	td := filepath.Join(pkgpath, "Contents/Resources/TokenDefinitions.plist")
+	if _, err := os.Stat(td); err == nil {
+		return os.Remove(td)
+	}
+	return nil
 }

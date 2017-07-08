@@ -107,6 +107,13 @@ func TestInstall(t *testing.T) {
 
 }
 
+func Test_suppressBundleRelocation(t *testing.T) {
+	pkg := createPkg(t)
+	if err := suppressBundleRelocation(pkg); err != nil {
+		t.Fatal(err)
+	}
+}
+
 // create package in tmp, returning path
 func createPkg(t *testing.T) string {
 	pkgroot := filepath.Join(os.TempDir(), "pkgroot")
