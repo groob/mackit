@@ -126,6 +126,12 @@ func Install(pkgpath string, opts ...Option) (restart bool, err error) {
 	}
 	defer o.cleanup()
 
+	if o.suppressBundleRelocation {
+		if err := suppressBundleRelocation(pkgpath); err != nil {
+			return false, err
+		}
+	}
+
 	restart, err = needsRestart(pkgpath, o.args...)
 	if err != nil {
 		return false, err
@@ -250,6 +256,10 @@ func fromOutput(out []byte) restartAction {
 
 func suppressBundleRelocation(pkgpath string) error {
 	if err := rmTokenDefinitions(pkgpath); err != nil {
+		return err
+	}
+
+	if err := rmIFPkgPathMappingsFromPlist(pkgpath); err != nil {
 		return err
 	}
 	return nil
