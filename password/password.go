@@ -29,7 +29,7 @@ type SaltedSHA512PBKDF2Dictionary struct {
 // from a plaintext password. The hash function will use a 128 bit
 // salt.
 func SaltedSHA512PBKDF2(plaintext string) (SaltedSHA512PBKDF2Dictionary, error) {
-	salt := make([]byte, macKeyLen)
+	salt := make([]byte, 32)
 	_, err := rand.Read(salt)
 	if err != nil {
 		return SaltedSHA512PBKDF2Dictionary{}, err
