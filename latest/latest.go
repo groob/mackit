@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// Version returns the latest macOS build number given a list of them.
 func Version(versions ...string) string {
 	if len(versions) == 0 {
 		return ""
@@ -15,12 +16,14 @@ func Version(versions ...string) string {
 	return v[0]
 }
 
+// Sorted sorts a list of macOS build numbers with the latest build number first.
 func Sorted(versions ...string) []string {
 	v := byVersion(versions)
 	sort.Sort(v)
 	return v
 }
 
+// ReverseSorted sorts a list of macOS build numbers from oldest to newest.
 func ReverseSorted(versions ...string) []string {
 	v := byVersion(versions)
 	sort.Sort(sort.Reverse(v))
