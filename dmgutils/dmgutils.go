@@ -48,6 +48,12 @@ func mountcmd(ctx context.Context, dmgpath string, extraArgs ...string) *exec.Cm
 	return exec.CommandContext(ctx, hdiutil, args...)
 }
 
+func unmountcmd(ctx context.Context, dmgpath string, extraArgs ...string) *exec.Cmd {
+	hdiutil := "/usr/bin/hdiutil"
+	args := []string{"detach", dmgpath}
+	return exec.CommandContext(ctx, hdiutil, args...)
+}
+
 type dmgAttachHeader struct {
 	SystemEntities []systemEntities `plist:"system-entities"`
 }
@@ -85,7 +91,7 @@ func MountDMG(dmgpath string, opts ...Option) (mountedpaths []string, err error)
 
 	if _, ok := o.ctx.Deadline(); !ok {
 		var cancel func()
-		o.ctx, cancel = context.WithTimeout(o.ctx, 30*time.Minute)
+		o.ctx, cancel = context.WithTimeout(o.ctx, 10*time.Minute)
 		defer cancel()
 	}
 
@@ -107,4 +113,32 @@ func MountDMG(dmgpath string, opts ...Option) (mountedpaths []string, err error)
 	}
 
 	return mountpoints, nil
+}
+
+// UnmountDMG unmounts a macOS dmg, returns bool for success/failure
+// Will attempt to force unmount if normal unmount is unsuccessful
+func UnmountDMG(dmgpath string, opts ...Option) (result bool, err error) {
+	o := new(hdiutil)
+	o.ctx = context.Background()
+	if err := o.apply(opts...); err != nil {
+		return false, err
+	}
+
+	if _, ok := o.ctx.Deadline(); !ok {
+		var cancel func()
+		o.ctx, cancel = context.WithTimeout(o.ctx, 10*time.Minute)
+		defer cancel()
+	}
+
+	cmd := unmountcmd(o.ctx, dmgpath, o.args...)
+	if _, err := cmd.Output(); err != nil {
+		// ordinary unmount unsuccessful, try forcing
+		cmd := unmountcmd(o.ctx, dmgpath, "-force")
+		_, err := cmd.Output()
+		if err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
 }
