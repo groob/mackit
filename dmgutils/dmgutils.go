@@ -4,7 +4,6 @@ package dmgutils
 import (
 	"bytes"
 	"context"
-	"log"
 	"os/exec"
 	"strings"
 	"time"
@@ -76,7 +75,7 @@ func (p *systemEntities) UnmarshalPlist(f func(i interface{}) error) error {
 }
 
 // MountDMG mounts a macOS dmg, returning a mount path on success.
-func MountDMG(pkgpath string, opts ...Option) (mountedpaths []string, err error) {
+func MountDMG(dmgpath string, opts ...Option) (mountedpaths []string, err error) {
 	o := new(hdiutil)
 	mountpoints := []string{}
 	o.ctx = context.Background()
@@ -90,14 +89,17 @@ func MountDMG(pkgpath string, opts ...Option) (mountedpaths []string, err error)
 		defer cancel()
 	}
 
-	cmd := mountcmd(o.ctx, pkgpath, o.args...)
+	cmd := mountcmd(o.ctx, dmgpath, o.args...)
 
-	out, _ := cmd.Output()
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
 	buf := bytes.NewBuffer(out)
 
 	var p dmgAttachHeader
 	if err := plist.NewDecoder(buf).Decode(&p); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	for _, element := range p.SystemEntities {
