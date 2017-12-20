@@ -109,7 +109,9 @@ func MountDMG(dmgpath string, opts ...Option) (mountedpaths []string, err error)
 	}
 
 	for _, element := range p.SystemEntities {
-		mountpoints = append(mountpoints, strings.TrimSpace(element.mounts.MountPoint))
+		if element.mounts.MountPoint != "" {
+			mountpoints = append(mountpoints, strings.TrimSpace(element.mounts.MountPoint))
+		}
 	}
 
 	return mountpoints, nil
